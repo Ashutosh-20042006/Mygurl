@@ -1,0 +1,253 @@
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Happy Birthday — [REPLACE_NAME]</title>
+  <meta name="description" content="A personalized birthday page — replace the name and photos to celebrate!" />
+  <style>
+    /* BASIC RESET */
+    :root{
+      --bg1:#ffd1e8; --bg2:#ff9ac6; --accent:#ff4da6; --card:#ffffffee; --muted:#6b6b6b;
+      --radius:18px;
+      --safe-width:420px;
+      --page-pad:18px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial; -webkit-font-smoothing:antialiased}
+    body{display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,var(--bg1),var(--bg2));padding:env(safe-area-inset-top) var(--page-pad);}
+    .phone{width:100%;max-width:var(--safe-width);height:85vh;background:linear-gradient(180deg,#fff0,#0000);border-radius:28px;box-shadow:0 10px 30px rgba(0,0,0,0.12);overflow:hidden;display:flex;flex-direction:column}
+
+    /* header / hero */
+    header{padding:18px;display:flex;flex-direction:column;align-items:center;gap:8px}
+    .mascot{width:84px;height:84px;border-radius:50%;background:linear-gradient(180deg,#fff,#fff0);display:flex;align-items:center;justify-content:center;font-size:42px}
+    h1{margin:0;font-size:22px;text-align:center;letter-spacing:0.4px;text-shadow:0 6px 18px rgba(0,0,0,0.08)}
+    p.subtitle{margin:0;color:var(--muted);font-size:13px}
+
+    /* main area */
+    main{flex:1;display:flex;flex-direction:column;align-items:center;gap:12px; padding:0 12px}
+    .card{background:var(--card);width:100%;border-radius:16px;padding:12px;box-shadow:0 6px 18px rgba(0,0,0,0.06);display:flex;flex-direction:column;align-items:center}
+    .cta{margin-top:8px;padding:10px 14px;border-radius:12px;background:linear-gradient(90deg,var(--accent),#ff7ab0);color:white;border:none;font-weight:600}
+
+    /* carousel area */
+    .carousel-wrap{width:100%;height:260px;display:flex;align-items:center;justify-content:center;perspective:1100px;position:relative}
+    .carousel{width:100%;max-width:360px;height:220px;position:relative;transform-style:preserve-3d;transition:transform 1s;transform-origin:center}
+    .carousel .item{position:absolute;left:50%;top:50%;transform-origin:center center;width:120px;height:160px;margin:-80px -60px;border-radius:10px;overflow:hidden;background:#fff;box-shadow:0 8px 20px rgba(0,0,0,0.12);display:flex;align-items:center;justify-content:center}
+    .carousel .item img{width:100%;height:100%;object-fit:cover;display:block}
+    .center-label{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;font-size:14px;color:var(--muted)}
+
+    /* controls */
+    .controls{display:flex;gap:8px;margin-top:6px}
+    .btn{padding:8px 10px;border-radius:10px;background:#fff;border:1px solid rgba(0,0,0,0.06)}
+
+    /* modal / lightbox */
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;padding:20px}
+    .overlay.open{display:flex}
+    .modal{background:white;padding:18px;border-radius:12px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.3)}
+    .modal h2{margin:0 0 8px}
+    .modal p{margin:0 0 14px;color:#333}
+
+    footer{padding:10px;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted)}
+
+    /* responsive tweaks */
+    @media (max-width:420px){.carousel-wrap{height:200px}.carousel .item{width:96px;height:128px;margin:-64px -48px}}
+  </style>
+</head>
+<body>
+  <div class="phone" role="application" aria-label="Birthday card app">
+    <header>
+      <div class="mascot">🐼</div>
+      <h1 id="hero">Happy Birthday, <span id="name">[REPLACE_NAME]</span>!</h1>
+      <p class="subtitle">A small surprise made with love 💖</p>
+    </header>
+
+    <main>
+      <div class="card">
+        <div style="text-align:center; font-weight:600;">Open the surprise!</div>
+        <button class="cta" id="openGift">Open Gift 🎁</button>
+      </div>
+
+      <div class="carousel-wrap" aria-hidden="false">
+        <div class="carousel" id="carousel" aria-label="Photo carousel"></div>
+        <div class="center-label">Happy Birthday</div>
+      </div>
+
+      <div class="controls">
+        <button class="btn" id="shuffle">Shuffle</button>
+        <button class="btn" id="toggleMusic">Play Music</button>
+        <button class="btn" id="shareBtn">Share</button>
+        <button class="btn" id="downloadBtn">Download Card</button>
+      </div>
+
+    </main>
+
+    <footer>
+      <div>Made with ❤️</div>
+      <div style="opacity:0.7;font-size:11px">Edit images & text in the script</div>
+    </footer>
+  </div>
+
+  <!-- Overlay modal & lightbox -->
+  <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal" role="document">
+      <h2>Happy Birthday!</h2>
+      <p id="modalMsg">Hey [REPLACE_NAME], today is your day — sending you smiles, hugs and the warmest wishes. You deserve the world. ✨</p>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+        <button class="btn" id="closeModal">Close</button>
+        <button class="cta" id="reveal">Open Gift</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- audio (replace path if needed) -->
+  <audio id="bgMusic" loop preload="auto">
+    <source src="/audio/bday.mp3" type="audio/mpeg">
+  </audio>
+
+  <script>
+    /***** CONFIG: Replace these values with your own photos, name, message, and music file *****/
+    const CONFIG = {
+      name: '*BUBUU *',
+      message: "*A very happy birthday my LOVE*
+I really wish we could be together on this birthday but we will be soon 🤞, so baby don't get upset we are working hard to be together and we will be and after that all our b'days will be the happiest one my lovieeuee 😙♥️",
+      photos: [
+        '/images/photo1.jpg',
+        '/images/photo2.jpg',
+        '/images/photo3.jpg',
+        '/images/photo4.jpg',
+        '/images/photo5.jpg'
+      ],
+      music: '/audio/bday.mp3'
+    };
+
+    // Apply basic text replacements
+    document.getElementById('name').textContent = CONFIG.name;
+    document.getElementById('modalMsg').textContent = CONFIG.message;
+    document.title = `Happy Birthday — ${CONFIG.name}`;
+
+    // References
+    const carousel = document.getElementById('carousel');
+    const overlay = document.getElementById('overlay');
+    const openGift = document.getElementById('openGift');
+    const reveal = document.getElementById('reveal');
+    const closeModal = document.getElementById('closeModal');
+    const bgMusic = document.getElementById('bgMusic');
+    const toggleMusicBtn = document.getElementById('toggleMusic');
+    const shareBtn = document.getElementById('shareBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+
+    // set music source if provided
+    if(CONFIG.music){
+      bgMusic.src = CONFIG.music;
+    }
+
+    // Build carousel items (CSS 3D arrangement)
+    function buildCarousel(){
+      carousel.innerHTML = '';
+      const n = CONFIG.photos.length;
+      const R = 140; // radius
+      for(let i=0;i<n;i++){
+        const angle = (360/n)*i;
+        const el = document.createElement('div');
+        el.className = 'item';
+        el.style.transform = `rotateY(${angle}deg) translateZ(${R}px)`;
+        const img = document.createElement('img');
+        img.src = CONFIG.photos[i];
+        img.alt = `Photo ${i+1}`;
+        el.appendChild(img);
+        el.tabIndex = 0;
+        el.addEventListener('click', ()=> openLightbox(i));
+        carousel.appendChild(el);
+      }
+    }
+
+    // Handle lightbox (simple)
+    function openLightbox(index){
+      overlay.classList.add('open');
+      overlay.setAttribute('aria-hidden','false');
+      overlay.querySelector('.modal').innerHTML = `
+        <div style="text-align:center">
+          <img src="${CONFIG.photos[index]}" style="max-width:100%;height:auto;border-radius:12px" alt="photo" />
+        </div>
+        <div style=\"display:flex;gap:8px;justify-content:flex-end;margin-top:12px\"> 
+          <button class=\"btn\" id=\"closeLight\">Close</button>
+        </div>
+      `;
+      document.getElementById('closeLight').addEventListener('click', closeOverlay);
+    }
+
+    function closeOverlay(){
+      overlay.classList.remove('open');
+      overlay.setAttribute('aria-hidden','true');
+      // restore modal content
+      overlay.querySelector('.modal').innerHTML = document.querySelector('.modal').outerHTML;
+    }
+
+    // simple confetti (canvas)
+    function burstConfetti(){
+      const canvas = document.createElement('canvas');
+      canvas.style.position='fixed';canvas.style.left=0;canvas.style.top=0;canvas.style.zIndex=9999;canvas.width=innerWidth;canvas.height=innerHeight;
+      document.body.appendChild(canvas);
+      const ctx = canvas.getContext('2d');
+      const pieces = [];
+      for(let i=0;i<100;i++){pieces.push({x:innerWidth/2,y:innerHeight/3,vx:(Math.random()-0.5)*6,vy:(Math.random()-0.5)*6,color:`hsl(${Math.random()*360},75%,60%)`,r:2+Math.random()*4})}
+      let t=0; const id = setInterval(()=>{
+        t++; ctx.clearRect(0,0,canvas.width,canvas.height);
+        for(const p of pieces){p.x+=p.vx; p.y+=p.vy; p.vy+=0.12; ctx.fillStyle=p.color; ctx.fillRect(p.x,p.y,p.r,p.r)}
+        if(t>200){clearInterval(id);canvas.remove()}
+      },16);
+    }
+
+    // autoplay rotation
+    let rot = 0; let autoRotate = true; let rotateId;
+    function animate(){
+      rot = (rot+0.2) % 360;
+      carousel.style.transform = `rotateY(${rot}deg)`;
+      rotateId = requestAnimationFrame(animate);
+    }
+
+    // Buttons
+    openGift.addEventListener('click', ()=>{ overlay.classList.add('open'); overlay.setAttribute('aria-hidden','false'); });
+    reveal.addEventListener('click', ()=>{ overlay.classList.remove('open'); overlay.setAttribute('aria-hidden','true'); burstConfetti(); if(bgMusic.src){ try{ bgMusic.play(); toggleMusicBtn.textContent='Pause Music'}catch(e){} } });
+    closeModal.addEventListener('click', ()=>{ overlay.classList.remove('open'); overlay.setAttribute('aria-hidden','true'); });
+
+    toggleMusicBtn.addEventListener('click', ()=>{
+      if(bgMusic.paused){ bgMusic.play(); toggleMusicBtn.textContent='Pause Music'} else { bgMusic.pause(); toggleMusicBtn.textContent='Play Music'}
+    });
+
+    document.getElementById('shuffle').addEventListener('click', ()=>{ CONFIG.photos = CONFIG.photos.sort(()=>Math.random()-0.5); buildCarousel(); });
+
+    // share: uses navigator.share if available
+    shareBtn.addEventListener('click', async ()=>{
+      const shareData = {title:`Happy Birthday ${CONFIG.name}`,text:`A surprise for ${CONFIG.name}`,url:location.href};
+      if(navigator.share){ try{ await navigator.share(shareData); }catch(e){ alert('Sharing canceled') } } else { try{ await navigator.clipboard.writeText(location.href); alert('Link copied to clipboard') }catch(e){ alert('Copy failed') }}
+    });
+
+    // download: capture hero area as canvas (simple)
+    downloadBtn.addEventListener('click', async ()=>{
+      try{
+        const canvas = document.createElement('canvas'); const w=800; const h=1200; canvas.width=w; canvas.height=h; const ctx=canvas.getContext('2d');
+        // Fill background
+        const g = ctx.createLinearGradient(0,0,0,h); g.addColorStop(0,'#ffd1e8'); g.addColorStop(1,'#ff9ac6'); ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
+        // Title
+        ctx.fillStyle='#fff'; ctx.font='bold 48px sans-serif'; ctx.textAlign='center'; ctx.fillText(`Happy Birthday`,w/2,220);
+        ctx.fillStyle='#fff'; ctx.font='48px sans-serif'; ctx.fillText(CONFIG.name,w/2,280);
+        // Draw first photo if available
+        const img = new Image(); img.crossOrigin='anonymous'; img.src = CONFIG.photos[0];
+        img.onload = ()=>{ ctx.drawImage(img,w/2-220,360,440,560); const a=document.createElement('a'); a.download=`happy-bday-${CONFIG.name}.png`; a.href=canvas.toDataURL('image/png'); a.click(); }
+        img.onerror = ()=>{ alert('Cannot load image to embed. Make sure images are accessible (CORS).'); }
+      }catch(e){ alert('Download failed') }
+    });
+
+    // init
+    buildCarousel(); animate();
+
+    // keyboard accessibility
+    document.addEventListener('keydown', (e)=>{ if(e.key==='Escape'){ overlay.classList.remove('open'); overlay.setAttribute('aria-hidden','true'); } });
+
+    // if browser does not support 3D transforms, provide fallback
+    const supports3D = typeof document.body.style.transform !== 'undefined';
+    if(!supports3D){ document.querySelector('.carousel-wrap').innerHTML = '<div style="padding:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px">' + CONFIG.photos.map(p=>`<img src="${p}" style="width:100%;height:100px;object-fit:cover;border-radius:10px">`).join('') + '</div>'; }
+
+  </script>
+</body>
+</html>
